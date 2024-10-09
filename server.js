@@ -19,16 +19,6 @@ const axios = require('axios');
 const encodedParams = new URLSearchParams();
 
 
-const options = {
-  method: 'POST',
-  url: 'https://url-shortener-service.p.rapidapi.com/shorten',
-  headers: {
-    'content-type': 'application/x-www-form-urlencoded',
-    'X-RapidAPI-Key': '7427880405msh1523b91d7d1eceep1f2f92jsn3ca832305ffc',
-    'X-RapidAPI-Host': 'url-shortener-service.p.rapidapi.com'
-  },
-  data: encodedParams,
-};
 
 
 app.get("/", function(req, res) {
@@ -41,12 +31,14 @@ app.get("/", function(req, res) {
 
 app.post("/", async function(reqs, resp) {
   try {
-    const originAddress = reqs.body.linkAdd;
-
-    encodedParams.set('url', originAddress)
-    const body = await axios.request(options)
-    let theURL = body.data.result_url
-
+    let originAddress = reqs.body.linkAdd;
+    originAddress = originAddress.trim();
+    
+    const body = await axios.get("https://ulvis.net/API/write/get?url="+originAddress);
+    
+    let theURL = body.data.data.url
+    console.log(theURL);
+    
     const imageUrl = await generateQRCode(originAddress);
     resp.render("index", { imageUrl, link: theURL });
   } catch (error) {
