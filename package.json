@@ -1,7 +1,7 @@
 {
   "name": "urls",
   "version": "1.0.0",
-  "description": "",
+  "description": "��#\u0000 \u0000S\u0000n\u0000i\u0000p\u0000U\u0000R\u0000L\u0000\r\u0000 \u0000",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -20,5 +20,14 @@
     "qrcode": "^1.5.3",
     "querystring": "^0.2.1",
     "serverless-http": "^3.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shubhamselakoti/SnipURL.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shubhamselakoti/SnipURL/issues"
+  },
+  "homepage": "https://github.com/shubhamselakoti/SnipURL#readme",
+  "keywords": []
 }
