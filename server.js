@@ -1,86 +1,60 @@
+const express = require("express");
+const axios = require("axios");
+const QRCode = require("qrcode");
 
-
-const express= require("express");
-const bodyParser =require("body-parser");
-
-const app=express();
-var QRCode = require('qrcode')
+const app = express();
 
 app.use(express.urlencoded({ extended: true }));
-
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.json());
 
-const qs = require('querystring');
-const http = require('https');
-
-const axios = require('axios');
-const encodedParams = new URLSearchParams();
-
-
-
-
-app.get("/", function(req, res) {
+app.get("/", (req, res) => {
   res.render("index", { imageUrl: null, link: "" });
 });
 
-// app.get("/error", function(req, res) {
-//   res.render("error");
-// });
-
-app.post("/", async function(reqs, resp) {
+app.post("/", async (req, res) => {
   try {
-    let originAddress = reqs.body.linkAdd;
-    originAddress = originAddress.trim();
+    let originAddress = req.body.linkAdd.trim();
     
-    const body = await axios.get("https://ulvis.net/API/write/get?url="+originAddress);
+    // Fetch shortened URL from ulvis.net API
+    const response = await axios.get(`https://ulvis.net/API/write/get?url=${originAddress}`);
     
-    let theURL = body.data.data.url
-    console.log(theURL);
+
+    let shortenedURL = response.data.data.url;
+    console.log("Shortened URL:", shortenedURL);
+
+    // Generate QR Code
+    const imageUrl = await generateQRCode(shortenedURL);
     
-    const imageUrl = await generateQRCode(originAddress);
-    resp.render("index", { imageUrl, link: theURL });
+    res.render("index", { imageUrl, link: shortenedURL });
   } catch (error) {
-    console.log(error);
-    resp.render("error");
+    console.error("Error:", error.message);
+    res.render("error");
   }
 });
 
-function generateQRCode(originAddress) {
-  return new Promise((resolve, reject) => {
-    const opts = {
-      errorCorrectionLevel: 'H',
-      type: 'image/png',
+async function generateQRCode(text) {
+  try {
+    return await QRCode.toDataURL(text, {
+      errorCorrectionLevel: "H",
+      type: "image/png",
       quality: 0.9,
       margin: 1,
       color: {
-        dark: '#000000',
-        light: '#0000'
+        dark: "#000000",
+        light: "#FFFFFF",
       },
       width: 300,
-      height: 300
-    };
-
-    QRCode.toDataURL(originAddress, opts, function (err, url) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(url);
-      }
+      height: 300,
     });
-  });
+  } catch (err) {
+    console.error("QR Code Generation Error:", err);
+    throw err;
+  }
 }
 
-
-
-
-let port = process.env.PORT || 3000;
-if(port==null || port=="")
-{
-    port=3000;
-}
-
-app.listen(port, function() {
-    console.log("Server started on port");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
 });
