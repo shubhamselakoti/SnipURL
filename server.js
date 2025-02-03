@@ -1,13 +1,11 @@
 const express = require("express");
 const axios = require("axios");
 const QRCode = require("qrcode");
-const cors = require('cors')
-
+const cors = require("cors");
 
 const app = express();
-app.use(cors());
 
-
+app.use(cors()); // Enable CORS for all requests
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -20,21 +18,28 @@ app.get("/", (req, res) => {
 app.post("/", async (req, res) => {
   try {
     let originAddress = req.body.linkAdd.trim();
-    
-    // Fetch shortened URL from ulvis.net API
-    const response = await axios.get(`https://ulvis.net/API/write/get?url=${originAddress}`);
-    
 
-    let shortenedURL = response.data.data.url;
+    if (!originAddress) {
+      return res.status(400).json({ error: "URL is required" });
+    }
+
+    // Shorten URL using TinyURL API
+    const response = await axios.get(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(originAddress)}`);
+
+    if (!response.data) {
+      throw new Error("Failed to get shortened URL from TinyURL.");
+    }
+
+    let shortenedURL = response.data;
     console.log("Shortened URL:", shortenedURL);
 
     // Generate QR Code
     const imageUrl = await generateQRCode(shortenedURL);
-    
-    res.render("index", { imageUrl, link: shortenedURL });
+
+    res.render('index', { imageUrl, link: shortenedURL });
   } catch (error) {
     console.error("Error:", error.message);
-    res.render("error");
+    res.render('error', { error: "Internal Server Error" });
   }
 });
 
